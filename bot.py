@@ -1,12 +1,9 @@
 import telebot
 import sqlite3
-import os
 
-# ТОКЕН ТВОЕГО БОТА
 TOKEN = '8731126220:AAHbJ0fKddQIs5_HTBEf0zzgzh1zm9rwEGs'
 bot = telebot.TeleBot(TOKEN)
 
-# ССЫЛКА НА ZIP-АРХИВ (заменишь позже)
 FILE_URL = 'https://your-link.com/metall-library.zip'
 
 # База данных
@@ -27,27 +24,23 @@ def start(message):
     conn.commit()
     
     bot.send_message(user_id, 
-        '📚 <b>БИБЛИОТЕКА МЕНЕДЖЕРА ПО ПРОДАЖАМ МЕТАЛЛОПРОКАТА</b>\n\n'
+        '📚 БИБЛИОТЕКА МЕНЕДЖЕРА ПО ПРОДАЖАМ МЕТАЛЛОПРОКАТА\n\n'
         '🔥 ЧТО ВНУТРИ:\n'
         '✓ 13 полноценных книг\n'
         '✓ 60+ скриптов продаж\n'
         '✓ 35+ возражений\n'
-        '✓ Технический справочник по металлам\n'
-        '✓ Актуально на 2026 год\n\n'
+        '✓ Технический справочник\n'
         '💰 ЦЕНА: 2 900 ₽\n\n'
-        '👇 Нажми кнопку "КУПИТЬ БИБЛИОТЕКУ"',
-        parse_mode='HTML', reply_markup=keyboard)
+        '👇 Нажми кнопку',
+        reply_markup=keyboard)
 
 @bot.message_handler(func=lambda message: message.text == '💰 КУПИТЬ БИБЛИОТЕКУ')
 def buy(message):
     bot.send_message(message.chat.id,
-        '💳 <b>КАК КУПИТЬ:</b>\n\n'
-        '1. Переведите 2 900 ₽ по реквизитам:\n'
-        '   ЮMoney: СЮДА_ССЫЛКУ\n'
-        '   Карта: СЮДА_НОМЕР_КАРТЫ\n\n'
-        '2. После оплаты напишите /paid КОД_ИЗ_ЧЕКА\n\n'
-        '📌 КОД — последние 4 цифры чека или номер транзакции',
-        parse_mode='HTML')
+        '💳 ОПЛАТА:\n\n'
+        'ЮMoney: СЮДА_ССЫЛКУ\n'
+        'Карта: СЮДА_НОМЕР\n\n'
+        'После оплаты отправь /paid КОД')
 
 @bot.message_handler(func=lambda message: message.text == '✅ ПРОВЕРИТЬ ОПЛАТУ')
 def check_payment(message):
@@ -56,32 +49,20 @@ def check_payment(message):
     result = cursor.fetchone()
     
     if result and result[0] == 1:
-        bot.send_message(user_id, f'✅ Доступ открыт!\nСкачай файлы:\n{FILE_URL}')
+        bot.send_message(user_id, f'✅ Доступ есть!\n{FILE_URL}')
     else:
-        bot.send_message(user_id, '❌ Оплата не найдена.\n\nОплатите и отправьте /paid КОД_ИЗ_ЧЕКА')
+        bot.send_message(user_id, '❌ Оплаты нет')
 
 @bot.message_handler(commands=['paid'])
 def paid(message):
     user_id = message.chat.id
-    # ПОЛУЧАЕМ КОД ИЗ СООБЩЕНИЯ
-    code = message.text.replace('/paid', '').strip()
-    
-    if len(code) > 0:
-        # УПРОЩЁННАЯ ПРОВЕРКА — ПОТОМ ЗАМЕНИШЬ НА РЕАЛЬНУЮ
-        cursor.execute('UPDATE users SET paid=1 WHERE user_id=?', (user_id,))
-        conn.commit()
-        bot.send_message(user_id,
-            f'✅ <b>ОПЛАТА ПОДТВЕРЖДЕНА!</b>\n\n'
-            f'📥 Скачай библиотеку по ссылке:\n{FILE_URL}\n\n'
-            f'Ссылка активна 24 часа',
-            parse_mode='HTML')
-    else:
-        bot.send_message(user_id, '❌ Укажите код оплаты: /paid КОД')
+    cursor.execute('UPDATE users SET paid=1 WHERE user_id=?', (user_id,))
+    conn.commit()
+    bot.send_message(user_id, f'✅ Оплата подтверждена!\nСкачай:\n{FILE_URL}')
 
-# ОБРАБОТКА ЛЮБЫХ ДРУГИХ СООБЩЕНИЙ
 @bot.message_handler(func=lambda message: True)
 def unknown(message):
-    bot.send_message(message.chat.id, '🤖 Я понимаю только команды:\n/start\n/paid КОД\n\nИли нажимайте на кнопки')
+    bot.send_message(message.chat.id, 'Используй кнопки или /start')
 
 if __name__ == '__main__':
     print('Бот запущен!')
