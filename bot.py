@@ -4,6 +4,9 @@ import sqlite3
 TOKEN = '8731126220:AAHbJ0fKddQIs5_HTBEf0zzgzh1zm9rwEGs'
 bot = telebot.TeleBot(TOKEN)
 
+# ОТКЛЮЧАЕМ WEBHOOK (ЭТО РЕШАЕТ ОШИБКУ 409)
+bot.remove_webhook()
+
 FILE_URL = 'https://your-link.com/metall-library.zip'
 
 conn = sqlite3.connect('users.db', check_same_thread=False)
@@ -64,5 +67,5 @@ def unknown(message):
     bot.send_message(message.chat.id, 'Нажми /start')
 
 if __name__ == '__main__':
-    print('Bot started')
-    bot.polling()
+    print('Бот запущен!')
+    bot.infinity_polling()
